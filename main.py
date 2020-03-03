@@ -16,15 +16,15 @@ por fazer a leitura dos beacons constantemente
 '''
 def scan_beacon():
     try:
-        beacons = []
-        possible_posx = []
-        possible_posy = []
-        pos_beacon_xy = []
-        posx_absolute_beacon = []
-        posy_absolute_beacon = []
-        beacon_real_position = []
-        beacon = Beacon()
-        beacon.scanner.start()
+        beacons = [] #lista que armazena todos os beacons
+        possible_relative_posx = [] #lista com posicoes possiveis no eixo x
+        possible_relative_posy = [] #lista com posicoes possiveis no eixo y
+        relative_pos_beacon_xy = [] #lista que armazena posicoes possiveis na forma [x,y]
+        beacon_posx = [] #posicao x do beacon encontrado
+        beacon_posy = [] #posicao y do beacon encontrado
+        possible_absolute_position = [] #lista que armazena as possiveis posicoes absolutas do objeto
+        beacon = Beacon() #instancia do objeto da classe beacon
+        beacon.scanner.start() #metodo que inicia o scanner do beacon
         while True:
             begin = time.time()
             end = time.time()
@@ -44,6 +44,12 @@ def scan_beacon():
             
             for one_beacon in beacon_filter:
                 beacons.append(one_beacon)
+
+            '''
+            caso nao encontre ao menos 3 beacons, executa a funcao novamente
+            '''
+            if len(beacons) < 3:
+                scan_beacon()
                 
             '''
             transforma o sinal rssi em distancia
@@ -53,9 +59,9 @@ def scan_beacon():
                 beacons[i] = beacon.convert_rssi_to_distance(beacons[i])
 
             beacon.sort_beacon(beacons)
-            beacon.print_beacons(beacons)
+            #beacon.print_beacons(beacons)
 
-            print('========================================')
+            #print('========================================')
 
             '''
             encontra as posicoes possiveis de cada sinal
@@ -65,53 +71,57 @@ def scan_beacon():
                 beacon_positionx = beacon.possible_positions('x', one_beacon[1])
                 beacon_positiony = beacon.possible_positions('y', one_beacon[1])
                 aux = [beacon_id, beacon_positionx]
-                possible_posx.append(aux)
+                possible_relative_posx.append(aux)
                 aux = [beacon_id, beacon_positiony]
-                possible_posy.append(aux)
+                possible_relative_posy.append(aux)
 
-            print(possible_posx)
-            print('========================================')
-            print(possible_posy)
-            print('========================================')
+            #print(possible_relative_posx)
+            #print('========================================')
+            #print(possible_relative_posy)
+            #print('========================================')
             '''
-            transforma as posicoes para uma forma de trabalho mais simples
+            transforma as posicoes para uma forma de trabalho mais simples, em uma
+            lista no formato [x,y]
             '''
             for i in range(3):
-                beacon_id = possible_posx[i][0]
-                position = beacon.positions(possible_posx[i][1], possible_posy[i][1])
+                beacon_id = possible_relative_posx[i][0]
+                position = beacon.positions(possible_relative_posx[i][1], possible_relative_posy[i][1])
                 aux = [beacon_id, position]
-                pos_beacon_xy.append(aux)
+                relative_pos_beacon_xy.append(aux)
             
-            print(pos_beacon_xy)
-            print('========================================')
+            #print(relative_pos_beacon_xy)
+            #print('========================================')
             '''
-            transforma as posicoes levando em conta os pontos fixos
-            dos beacons
+            retorna a posicao fixa de cada beacon que foi lido
             '''
             for i in range(3):
-                posx, posy = beacons_database.beacon_absolute_position(pos_beacon_xy[i][0])
-                posx_absolute_beacon.append(posx)
-                posy_absolute_beacon.append(posy)
+                posx, posy = beacons_database.beacon_absolute_position(relative_pos_beacon_xy[i][0])
+                beacon_posx.append(posx)
+                beacon_posy.append(posy)
 
-            print(posx_absolute_beacon)
-            print('========================================')
-            print(posy_absolute_beacon)
-            print('========================================')
-                
+            #print(beacon_posx)
+            #print('========================================')
+            #print(beacon_posy)
+            #print('========================================')
+
+            '''
+            transforma a lista de posicoes relativas do robo em relacao ao beacon
+            em uma lista de posicoes absolutas no ambiente
+            '''
             for i in range(3):
-                beacon_real_position.append(beacon.transform_positions(pos_beacon_xy[i][1], posx_absolute_beacon[i], posy_absolute_beacon[i]))
+                possible_absolute_position.append(beacon.transform_positions(relative_pos_beacon_xy[i][1], beacon_posx[i], beacon_posy[i]))
 
-            print(beacon_real_position)
-            print('========================================')
+            #print(possible_absolute_position)
+            #print('========================================')
             '''
-            encontra a posicao final
+            encontra a posicao final com base nas posicoes absolutas encontradas
             '''
-            initial_position = beacon.find_positions(beacon_real_position[0], beacon_real_position[1])
-            print(initial_position)
-            print('========================================')
-            final_position = beacon.final_position(initial_position, beacon_real_position[2])
-            print(final_position)
-            print('========================================')
+            initial_position = beacon.find_positions(possible_absolute_position[0], possible_absolute_position[1])
+            #print(initial_position)
+            #print('========================================')
+            final_position = beacon.final_position(initial_position, possible_absolute_position[2])
+            #print(final_position)
+            #print('========================================')
             beacon.clear_signal()
              
     except Exception as err:
