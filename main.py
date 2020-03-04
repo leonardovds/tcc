@@ -60,13 +60,15 @@ def scan_beacon():
 
             beacon.sort_beacon(beacons)
             #beacon.print_beacons(beacons)
+            
+            proximty_beacons = beacons[0:3]
 
             #print('========================================')
 
             '''
             encontra as posicoes possiveis de cada sinal
             '''
-            for one_beacon in beacons:
+            for one_beacon in proximity_beacons:
                 beacon_id = one_beacon[0]
                 beacon_positionx = beacon.possible_positions('x', one_beacon[1])
                 beacon_positiony = beacon.possible_positions('y', one_beacon[1])
