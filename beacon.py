@@ -55,13 +55,13 @@ class Beacon():
         positions = []
         i = 0
         if axis == 'y':
-            while i < 25:
+            while i < 100:
                 aux = math.sin(step) * distance
                 positions.append(aux)
                 step += pi/50
                 i += 1
         else:
-            while i < 25:
+            while i < 100:
                 aux = math.cos(step) * distance
                 positions.append(aux)
                 step += pi/50
