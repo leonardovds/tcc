@@ -3,10 +3,11 @@ Importacao das bibliotecas a serem utilizadas
 no projeto
 '''
 
+import socketio
 import math
 import time
-from beacon import Beacon #classe Beacon que implementa as funcoes do programa
 import db as beacons_database #arquivo com informacoes dos beacons
+from beacon import Beacon #classe Beacon que implementa as funcoes do programa
 from threading import Thread
 
 '''
@@ -126,14 +127,19 @@ def scan_beacon():
 
     finally:
         beacon.scanner.stop()
-'''
-testa multiplas threads
-def testa_thread():
-    while True:
-        print('a')
-        time.sleep(1)
 
-functions = [scan_beacon, testa_thread]'''
+
+def socket_io():
+    sio = socketio.Client()
+
+    @sio.on('button message')
+    def on_message(msg):
+        print(msg)
+
+    sio.connect('http://localhost:3001')
+    sio.wait()
+
+functions = [scan_beacon, socket_io]
 
 functions = [scan_beacon]
 threads = list()
