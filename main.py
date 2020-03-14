@@ -9,7 +9,6 @@ from beacon import Beacon #classe Beacon que implementa as funcoes do programa
 import db as beacons_database #arquivo com informacoes dos beacons
 from threading import Thread
 
-
 '''
 funcao que contem o programa principal que sera responsavel
 por fazer a leitura dos beacons constantemente
@@ -26,24 +25,22 @@ def scan_beacon():
         beacon = Beacon() #instancia do objeto da classe beacon
         beacon.scanner.start() #metodo que inicia o scanner do beacon
         while True:
-            begin = time.time()
-            end = time.time()
             '''
-            primeiro passo e fazer a leitura dos beacons, e isso ocorre
-            por 5 segundos, meramente estipulado.
+            Aguarda 5 segundos para fazer a leitura do beacon
             '''
-            while end - begin < 5:
-                beacon_data = beacon.signal()
-                end = time.time()
+            print('lendo beacon')
+            time.sleep(5)
+            beacon_data = beacon.signal()
             '''
             apos fazer a leitura dos beacons, sao armazenados cada um em um
             indice de uma lista na var beacons
-            '''
-
+            '''         
             beacon_filter = beacon.return_beacon(beacon_data)
             
             for one_beacon in beacon_filter:
                 beacons.append(one_beacon)
+
+            print('leitura realizada')
 
             '''
             caso nao encontre ao menos 3 beacons, executa a funcao novamente
@@ -60,15 +57,13 @@ def scan_beacon():
 
             beacon.sort_beacon(beacons)
             #beacon.print_beacons(beacons)
-            
-            proximty_beacons = beacons[0:3]
 
             #print('========================================')
 
             '''
             encontra as posicoes possiveis de cada sinal
             '''
-            for one_beacon in proximity_beacons:
+            for one_beacon in beacons:
                 beacon_id = one_beacon[0]
                 beacon_positionx = beacon.possible_positions('x', one_beacon[1])
                 beacon_positiony = beacon.possible_positions('y', one_beacon[1])
@@ -131,13 +126,29 @@ def scan_beacon():
 
     finally:
         beacon.scanner.stop()
-            
-t_one = Thread(target=scan_beacon)
-t_one.start()
+'''
+testa multiplas threads
+def testa_thread():
+    while True:
+        print('a')
+        time.sleep(1)
 
-while True:
-    if not t_one.is_alive():
-        break
+functions = [scan_beacon, testa_thread]'''
+
+functions = [scan_beacon]
+threads = list()
+
+for index in range(len(functions)):
+    t = Thread(target=functions[index])
+    threads.append(t)
+    t.start()
+
+'''
+funcao que 
+
+for thread in threads:
+    thread.join()
+'''
 
 
     
